@@ -13,7 +13,7 @@ import re
 # pip install  antlr4-python3-runtime 
 
 #doc = Document()
-doc = Document('Test', geometry_options = {"head": "2cm","margin": "2cm","bottom": "3cm"})
+doc = Document('Oefeningen', geometry_options = {"head": "2cm","margin": "2cm","bottom": "3cm"})
 
 doc.documentclass = Command(
         'documentclass',
@@ -54,12 +54,13 @@ doc.preamble.append(NoEscape(r"""
     \noindent
     \begin{center}
     \begin{tabular}{ c|c } 
+        &  \mystrut  \\
         #2 &  \mystrut \\\cline{1-1}
         \xemptyrows{#1}%
+        &  \mystrut  \\\\
     \end{tabular}
     \mybox{$#2 = $ \underline{\hspace{0.2 \linewidth}}}
     \end{center}
-    
 }
 \newcommand\xemptyrows[1]{%
 \ifnum#1=0 \else
@@ -308,7 +309,6 @@ def add_simple_arithmetic_exercises(digits,max_number_of_exercises):
 
 
 def recurse_factors(previous_total_product,max_total_product, even_powers=False):
-    p = random()
     a = randint(2,20)
     if even_powers: b = 2*randint(1,2)
     else: b = randint(1,4)
@@ -328,13 +328,13 @@ def recurse_factors(previous_total_product,max_total_product, even_powers=False)
 
 def add_factorize_exercises(max_digits, number_of_exercises):
     max_total_product = 10**max_digits
-    products =  []
-    while len(products) < number_of_exercises:
+    products_expr =  []
+    while len(products_expr) < number_of_exercises:
         product = recurse_factors(1, max_total_product, even_powers=False)
         product_expr = Number(product)
         #print(fraction)
-        if (max_total_product/20 < product) and ( product < max_total_product) and not (product_expr in products):
-            products.append(product_expr)
+        if (max_total_product/20 < product) and ( product < max_total_product) and not (product_expr in products_expr):
+            products_expr.append(product_expr)
 
     punten_telling = r'\hfill' + ".../"+str(number_of_exercises)
     section_title_string = r'Getallen ontbinden in $\mathbb{N}$ ('+ '*' * max(1,ceil(log10(max_total_product)-2)) +')' + punten_telling 
@@ -348,7 +348,7 @@ def add_factorize_exercises(max_digits, number_of_exercises):
     \begin{enumerate}
     """))
 
-    for product in products:
+    for product in products_expr:
        doc.append(NoEscape(r'\item Ontbind het product '+'$' + str(product)+ '$ in factoren:'+ '\\emptyrows{' + str(max(1,max_digits)) + '}{'+str(product)+'}'))
 
     doc.append(NoEscape(r"""
@@ -421,14 +421,20 @@ def add_simplify_fractions_exercises(digits, number_of_exercises):
 
 def add_lcm_exercises(max_digits, number_of_exercises):
     max_total_product = 10**max_digits
-    products =  []
-    while len(products) < number_of_exercises:
-        product = recurse_factors(1, max_total_product, even_powers=False)
+    products_expr =  []
+    products1 = []
+    products2 = []
+
+    while len(products_expr) < number_of_exercises:
+        product1 = recurse_factors(1, max_total_product, even_powers=False)
         product2 = recurse_factors(1, max_total_product, even_powers=False)
-        product_expr = MixfixBinaryExpression(Number(product),r', ',Number(product2))
+        product = product1 * product2
+        product_expr = MixfixBinaryExpression(Number(product1),r', ',Number(product2))
         #print(fraction)
-        if (max_total_product/20 < product) and ( product < max_total_product) and not (product_expr in products):
-            products.append(product_expr)
+        if (max_total_product/20 < product) and ( product < max_total_product) and not (product_expr in products_expr):
+            products1.append(product1)
+            products2.append(product2)
+            products_expr.append(product_expr)
 
     punten_telling = r'\hfill' + ".../"+str(number_of_exercises)
     section_title_string = r'Kleinst gemeenschappelijk veelvoud in $\mathbb{N}$ ('+ '*' * max(1,ceil(log10(max_total_product)-2)) +')' + punten_telling 
@@ -439,9 +445,15 @@ def add_lcm_exercises(max_digits, number_of_exercises):
     \begin{enumerate}
     """))
 
-    for product in products:
-       doc.append(NoEscape(r'\item '+r'\mybox{$\text{kgv}(' + str(product)+ r') = $ '+
-       r'\underline{\hspace{0.3 \linewidth}}}'))
+    for i in range(1,number_of_exercises):
+
+        p1 = products1[i]
+        p2 = products2[i]
+        doc.append(NoEscape(r'\item Ontbind eerst '+'$' + str(p1)+ ', '+ str(p2) + '$ in factoren:'))
+        doc.append(NoEscape(r'\emptyrows{' + str(max(1,max_digits)) + '}{'+str(p1)+'}'))
+        doc.append(NoEscape(r'\emptyrows{' + str(max(1,max_digits)) + '}{'+str(p2)+'}'))
+
+        doc.append(NoEscape(r'Bereken nu '+r'$\text{kgv}(' + str(product)+ r'):$ '+ r'\derivblank{' + str(max(0,max_digits -2))  + '}'))
 
     doc.append(NoEscape(r"""
     \end{enumerate}
@@ -570,19 +582,19 @@ def add_exercise_order_operations(max_depth,max_number_of_exercises,fractions, h
 
 
 #add_exercises_knowledge(4,10)
-add_simple_arithmetic_exercises(4,20)
-add_factorize_exercises(3,10)
+#add_simple_arithmetic_exercises(4,20)
+#add_factorize_exercises(3,10)
 add_factorize_exercises(4,4)
-add_simplify_root_exercises(2,10)
-add_simplify_root_exercises(3,10)
-add_simplify_root_exercises(4,4)
-add_exercise_order_operations(2,20, fractions = False, hard_exponents= False)
-add_exercise_order_operations(6,20, fractions = False, hard_exponents = False)
-add_simplify_fractions_exercises(3,10)
-add_lcm_exercises(2,10)
-add_add_fractions_exercises(1,10)
-add_add_fractions_exercises(3,10)
-add_exercise_order_operations(5,20, fractions = True, hard_exponents= False)
+#add_simplify_root_exercises(2,10)
+#add_simplify_root_exercises(3,10)
+#add_simplify_root_exercises(4,4)
+#add_exercise_order_operations(2,20, fractions = False, hard_exponents= False)
+#add_exercise_order_operations(6,20, fractions = False, hard_exponents = False)
+#add_simplify_fractions_exercises(3,10)
+#add_lcm_exercises(2,10)
+#add_add_fractions_exercises(1,10)
+#add_add_fractions_exercises(3,10)
+#add_exercise_order_operations(5,20, fractions = True, hard_exponents= False)
 #add_exercise_order_operations(7,20, fractions = False, hard_exponents= False)
 
 #doc.generate_tex('test_pylatex_latex')

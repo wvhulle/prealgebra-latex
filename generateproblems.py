@@ -140,7 +140,12 @@ Dit is een automatisch gegenereerde toets. Een rekenmachine is niet nodig. De mo
 """))
 
 
-
+def latex_string_to_sympy(rand_expr):
+    # compute slightly simplified question with sympy from latex
+    stripped_expr = re.sub(r'\\left', ' ', rand_expr)
+    stripped_expr = re.sub(r'\\right', ' ', stripped_expr) # bug in sympy
+    stripped_expr = re.sub(r'\\cdot', r'*', stripped_expr)
+    return(parse_latex(stripped_expr))
 
 
 
@@ -273,10 +278,12 @@ def add_factorize_exercises(max_digits, number_of_exercises):
     products_expr =  []
     while len(products_expr) < number_of_exercises:
         product = recurse_factors(1, max_total_product, even_powers=False)
-        product_expr = Number(product)
+        product_expr = '$'+ str(Number(product))+'$'
         #print(fraction)
         if (max_total_product/20 < product) and ( product < max_total_product) and not (product_expr in products_expr):
             products_expr.append(product_expr)
+
+
 
     punten_telling = r'\hfill' + ".../"+str(number_of_exercises)
     section_title_string = r'Getallen ontbinden in $\mathbb{N}$ ('+ '*' * max(1,ceil(log10(max_total_product)-2)) +')' + punten_telling 
@@ -291,7 +298,7 @@ def add_factorize_exercises(max_digits, number_of_exercises):
     """))
 
     for product in products_expr:
-       doc.append(NoEscape(r'\item Ontbind het product '+'$' + str(product)+ '$ in factoren:'+ '\\emptyrows{' + str(max(1,max_digits)) + '}{'+str(product)+'}'))
+       doc.append(NoEscape(r'\item Ontbind het product '+ product + ' in factoren:'+ '\\emptyrows{' + str(max(1,max_digits)) + '}{'+str(product)+'}'))
 
     doc.append(NoEscape(r"""
     \end{enumerate}
@@ -439,51 +446,54 @@ def add_lcm_exercises(max_digits, number_of_exercises):
     \end{multicols}
     """))
 
-def add_add_fractions_exercises(digits, number_of_exercises):
-    max_nominator = 10**digits
-    fractions =  []
-    while len(fractions) < number_of_exercises:
-        r1 = randint(2,10)
-        r2 = randint(2,10)
-        nominator = recurse_factors(r1, max_nominator, even_powers=False)
-        denominator = recurse_factors(r2, max_nominator, even_powers=False)
-        fraction_sum = PrefixBinaryExpression(Number(nominator),r'\frac', Number(denominator))
-        terms = randint(2,3)
-        #print('Number of terms: ', terms)
-        for i in range(1,terms):
-            not_found = True
-            while not_found:
-                # generate first fraction
-                common_factor = randint(2,5)
-                #print('Common factor: ', common_factor)
-                nominator = recurse_factors(common_factor, max_nominator, even_powers=False)
-                #print('Random product: ', nominator)
-                denominator = recurse_factors(common_factor, max_nominator, even_powers=False)
-                fraction = PrefixBinaryExpression(Number(nominator),r'\frac', Number(denominator))
-                #print('Potential extra term: ',fraction)
-                if nominator != denominator:
-                    fraction_sum = MixfixBinaryExpression(fraction_sum,'+', fraction)
-                    not_found = False
-                    #print('Updated fraction sum: ',fraction_sum)
-        fractions.append(fraction_sum)
 
-    punten_telling = r'\hfill' + ".../"+str(number_of_exercises)
-    section_title_string = r'Breuken optellen in $\mathbb{Q}$ ('+ '*' * (ceil(log10(max_nominator)+1)) +')' + punten_telling 
-    doc.append(Section(NoEscape(section_title_string)))
-    doc.append(NoEscape(r"""
-    Tel de volgende breuken op na vereenvoudiging en op gelijke noemers zetten. 
-    \begin{multicols}{2}
-    \begin{enumerate}
-    """))
 
-    for fraction in fractions:
-       # print(fraction)
-       doc.append(NoEscape(r'\item Tel '+'$' + str(fraction)+ '$ op:'+ r'\derivblank{' + str(max(1,digits -1))  + '}'))
 
-    doc.append(NoEscape(r"""
-    \end{enumerate}
-    \end{multicols}
-    """))
+# def add_add_fractions_exercises(digits, number_of_exercises):
+#     max_nominator = 10**digits
+#     fractions =  []
+#     while len(fractions) < number_of_exercises:
+#         r1 = randint(2,10)
+#         r2 = randint(2,10)
+#         nominator = recurse_factors(r1, max_nominator, even_powers=False)
+#         denominator = recurse_factors(r2, max_nominator, even_powers=False)
+#         fraction_sum = PrefixBinaryExpression(Number(nominator),r'\frac', Number(denominator))
+#         terms = randint(2,3)
+#         #print('Number of terms: ', terms)
+#         for i in range(1,terms):
+#             not_found = True
+#             while not_found:
+#                 # generate first fraction
+#                 common_factor = randint(2,5)
+#                 #print('Common factor: ', common_factor)
+#                 nominator = recurse_factors(common_factor, max_nominator, even_powers=False)
+#                 #print('Random product: ', nominator)
+#                 denominator = recurse_factors(common_factor, max_nominator, even_powers=False)
+#                 fraction = PrefixBinaryExpression(Number(nominator),r'\frac', Number(denominator))
+#                 #print('Potential extra term: ',fraction)
+#                 if nominator != denominator:
+#                     fraction_sum = MixfixBinaryExpression(fraction_sum,'+', fraction)
+#                     not_found = False
+#                     #print('Updated fraction sum: ',fraction_sum)
+#         fractions.append(fraction_sum)
+
+#     punten_telling = r'\hfill' + ".../"+str(number_of_exercises)
+#     section_title_string = r'Breuken optellen in $\mathbb{Q}$ ('+ '*' * (ceil(log10(max_nominator)+1)) +')' + punten_telling 
+#     doc.append(Section(NoEscape(section_title_string)))
+#     doc.append(NoEscape(r"""
+#     Tel de volgende breuken op na vereenvoudiging en op gelijke noemers zetten. 
+#     \begin{multicols}{2}
+#     \begin{enumerate}
+#     """))
+
+#     for fraction in fractions:
+#        # print(fraction)
+#        doc.append(NoEscape(r'\item Tel '+'$' + str(fraction)+ '$ op:'+ r'\derivblank{' + str(max(1,digits -1))  + '}'))
+
+#     doc.append(NoEscape(r"""
+#     \end{enumerate}
+#     \end{multicols}
+#     """))
 
 class Expression:
     pass
@@ -536,16 +546,13 @@ class UnaryFunctionExpression(Expression):
     def __str__(self):
         return self.op + r'\left(' + str(self.exp) + r'\right)'
 
-def randomExpression(prob,maxdepth,previous_was_par=False, in_exp=False, fractions=False, hard_exponents = False):
+def randomExpression(prob,maxdepth,previous_was_par=False, in_exp=False, fractions=False):
     # Throw a dice for choosing whether this is going to be number
     p = random()
     next_p = prob + 0.05*(1-prob) # step-wise increase in number probability on each level
     if p <= prob or maxdepth <= 0:
         if in_exp == True: # use smaller numbers
-            if hard_exponents:
-                n_small = randint(-4,4)
-            else:
-                n_small = randint(0,4) # no negative in easy exponents
+            n_small = randint(0,4) # no negative numbers for easy exponents
             if n_small < 0:
                 return ParenthesizedExpression(Number(n_small))
             else:
@@ -560,100 +567,83 @@ def randomExpression(prob,maxdepth,previous_was_par=False, in_exp=False, fractio
         # Throw a dice for choosing an operation
         b = random()
         if b < 0.05 and previous_was_par == False:
-            return ParenthesizedExpression(randomExpression(next_p , maxdepth-1, False, in_exp, fractions, hard_exponents))
-        elif b < 0.10 and ((not in_exp) or (hard_exponents)): 
+            return ParenthesizedExpression(randomExpression(next_p , maxdepth-1, False, in_exp, fractions))
+        elif b < 0.10 and ((not in_exp)): 
             unop = choice(["\sqrt"])
-            return UnaryExpression(unop,randomExpression(next_p , maxdepth-1, False, in_exp, fractions, hard_exponents))
+            return UnaryExpression(unop,randomExpression(next_p , maxdepth-1, False, in_exp, fractions))
         elif b < 0.20:
             # do the difficult binary operations
-            left = randomExpression(next_p ,maxdepth-1,False, True, fractions, hard_exponents)
+            left = randomExpression(next_p ,maxdepth-1,False, True, fractions)
             op = choice(["^"])
-            right = randomExpression(next_p ,maxdepth-1, False, True, fractions, hard_exponents)
+            right = randomExpression(next_p ,maxdepth-1, False, True, fractions)
             return MixfixBinaryExpression(left, op, right)
-        elif b < 0.3 and not in_exp or hard_exponents:  # negation not in exponent
+        elif b < 0.3 and not in_exp:  # negation not in exponent
             unop = choice(["-"]) # other functions such a sin could be added here
-            return UnaryFunctionExpression(unop,randomExpression(next_p , maxdepth-1, False, in_exp, fractions, hard_exponents))
+            return UnaryFunctionExpression(unop,randomExpression(next_p , maxdepth-1, False, in_exp, fractions))
         elif b < 0.8:
             # easier binary operations
-            left = randomExpression(next_p ,maxdepth-1,False,in_exp, fractions, hard_exponents)
-            right = randomExpression(prob * 1.2,maxdepth-1, False, in_exp, fractions, hard_exponents)
-            if not in_exp or hard_exponents:
+            left = randomExpression(next_p ,maxdepth-1,False,in_exp, fractions)
+            right = randomExpression(prob * 1.2,maxdepth-1, False, in_exp, fractions)
+            if not in_exp:
                 mixop = choice(["+", "-", "\cdot", ":"])
             else:
                 mixop = choice(["+", "\cdot"]) # no fractional or negative exponents
             
             return MixfixBinaryExpression(left, mixop, right)
-        elif b < 0.9 and fractions and (not in_exp) or hard_exponents: 
-            left = randomExpression(next_p ,maxdepth-1,False,in_exp, fractions, hard_exponents)
+        elif b < 0.9 and fractions and (not in_exp): 
+            left = randomExpression(next_p ,maxdepth-1,False,in_exp, fractions)
             preop = choice([r'\frac'])
-            right = randomExpression(prob * 1.2,maxdepth-1, False, in_exp, fractions, hard_exponents)
+            right = randomExpression(prob * 1.2,maxdepth-1, False, in_exp, fractions)
             return PrefixBinaryExpression(left, preop, right)
         else: 
             return Number(randint(0,3))
 
-def generate_exercises_order_operations(max_depth,max_number_of_exercises,fractions, hard_exponents):
-    # Generate questions
-    questions = []
-    symbolic_solutions = []
-    numeric_solutions = []
-    difficulties = []
+# generator gives a question math string (without $$) in LaTeX
+def generate_latex_question_with_answer(question_generator,difficulty):
     loop = 0
-    max_loop = 200
-    while len(questions) < max_number_of_exercises and loop < max_loop:
-
-        # create expression of semi-random depth
-        depth = randint(ceil(max_depth/3),max_depth)
-        rand_expr = str(randomExpression(0.05,depth, True, False, fractions))
+    max_loop = 20
+    found = False
+    while not found and loop < max_loop:
+        rand_expr = question_generator(difficulty)
         latex_question_math = '$' + rand_expr + '$'
-        latex_question_full = latex_question_math
-        mean_ideal_string_length = 3*(max_depth)+2 # exclude exponential or sublinear solutions
-        
-        # compute slightly simplified question with sympy from latex
-        stripped_expr = re.sub(r'\\left', ' ', rand_expr)
-        stripped_expr = re.sub(r'\\right', ' ', stripped_expr) # bug in sympy
-        stripped_expr = re.sub(r'\\cdot', r'*', stripped_expr)
-        latex_question_math_parsed = parse_latex(stripped_expr)
-        if   abs(len(str(latex_question_math_parsed)) - mean_ideal_string_length) < 4:
-            latex_question_difficulty = min(max(depth-1,0),4) 
-            difficulties.append(latex_question_difficulty)
-            questions.append(latex_question_full)
-            # Save latex question
+        mean_ideal_string_length = 4*(difficulty)+2
+        latex_question_math_parsed = latex_string_to_sympy(rand_expr)
+        print('The generated question ', str(latex_question_math_parsed), ' has length ', len(str(latex_question_math_parsed)), ' but i expected more like ', mean_ideal_string_length)
+        if   abs(len(str(latex_question_math_parsed)) - mean_ideal_string_length) < 6:
+            found = True
+            latex_question_difficulty = min(max(difficulty-1,1),4) 
             latex_answer_question_math = '$' + sympy.latex(latex_question_math_parsed.simplify()) + '$'
-            print(latex_question_full)
-            # Save simplified latex solutions
             latex_answer_question_math_eval = '$' + sympy.latex(N(latex_question_math_parsed.simplify(),3)) + '$'
-            symbolic_solutions.append(latex_answer_question_math )
-            numeric_solutions.append(latex_answer_question_math_eval)
+            
+        loop += 1
+    if not loop < max_loop:
+        print('Generated too many long or short questions.')
+    return([latex_question_difficulty,  latex_question_math,latex_answer_question_math, latex_answer_question_math_eval])
 
-        #else:
-            #print("This expression was too long or short: ", latex_question_math)
-        loop = loop + 1
 
-        title = r"Volgorde van de bewerkingen"
-        advice = r"""
-        Vereenvoudig de volgende uitdrukkingen zoveel mogelijk in deze volgorde: (1) haakjes, (2) machten en wortels, (3) vermenigvuldiging en deling en (4) optelling en aftrekking.
-        \begin{itemize}
-        \item Bereken alle wortels exact of benader met gekende wortels. Bijvoorbeeld $\sqrt{5} \approx 2,24 ...$.
-        \item Exponenten groter dan $4$ hoeven niet berekend te worden. 
-        \end{itemize}
-        """
-        imperative = "Los op"
 
-    return([difficulties,questions,symbolic_solutions,numeric_solutions,advice,title,imperative])
 
-def add_exercises_order_operations(questions_with_answers, with_answers):
-    difficulties = questions_with_answers[0]
-    questions = questions_with_answers[1]
-    symbolic_solutions = questions_with_answers[2]
-    numeric_solutions = questions_with_answers[3]
-    advice_for_exercises = questions_with_answers[4]
-    title = questions_with_answers[5]
-    imperative = questions_with_answers[6]
+def generate_exercises(question_generator,max_depth,max_number_of_exercises, title, advice, imperative):
+    # Generate questions
+    qas = []
+    for i in range(max_number_of_exercises):
+        difficulty = randint(ceil(max_depth/2),max_depth)
+        qa = generate_latex_question_with_answer(question_generator, difficulty)
+        qas.append(qa)
+    return([title,advice,imperative,qas])
 
+
+def add_exercises(full_qas, with_answers):
+    
+    qas = full_qas[3]
+    advice_for_exercises = full_qas[1]
+    title = full_qas[0]
+    imperative =full_qas[2]
+    n =str(len(qas))
     # Generate section header LaTeX
     if not with_answers:
-        punten_telling = r'\hfill' + ".../"+str(len(questions))
-        section_title_string = title + ' ('+ '*' * max(difficulties)  +') '  + punten_telling 
+        punten_telling = r'\hfill' + ".../"+ n
+        section_title_string = title + ' ('+ '*' * (qas[0])[0]  +') '  + punten_telling 
         doc.append(Section(NoEscape(section_title_string)))
         doc.append(NoEscape(advice_for_exercises))
         doc.append(NoEscape(r"""
@@ -661,8 +651,8 @@ def add_exercises_order_operations(questions_with_answers, with_answers):
         \begin{enumerate}
         """))
     else: 
-        punten_telling = r'\hfill' + str(len(questions))+ "/"+str(len(questions))
-        section_title_string = title + r' (oplossing)' + ' ('+ '*' * max(difficulties)  +')'  + punten_telling   
+        punten_telling = r'\hfill' +  n + "/"+ n
+        section_title_string = title + r' (oplossing)' + ' ('+ '*' * (qas[0])[0] +')'  + punten_telling   
         
         doc.append(Section(NoEscape(section_title_string)))
         doc.append(NoEscape(r"""
@@ -670,14 +660,16 @@ def add_exercises_order_operations(questions_with_answers, with_answers):
         \begin{enumerate}
         """))
 
-    for i in range(0, len(questions)):
+    for qa in qas:
+        stars = str(min(3,max(1,qa[0])))
+        question = qa[1]
            #  print('outputting question ', i)
-            doc.append(NoEscape(r'\item ' + imperative + r': '))
-            doc.append(NoEscape(questions[i]))
-            if not with_answers:
-                doc.append(NoEscape('\derivblank{' + str(max(3,difficulties[i])) +'}'))
-            else:
-                doc.append(NoEscape('\derivblanksolution{' + symbolic_solutions[i] + '}{' + numeric_solutions [i] + '}'))
+        doc.append(NoEscape(r'\item ' + imperative + r': '))
+        doc.append(NoEscape(question))
+        if not with_answers:
+            doc.append(NoEscape('\derivblank{' + stars +'}'))
+        else:
+            doc.append(NoEscape('\derivblanksolution{' + qa[2] + '}{' + qa[3] + '}'))
     
     doc.append(NoEscape(r"""
     \end{enumerate}
@@ -685,8 +677,50 @@ def add_exercises_order_operations(questions_with_answers, with_answers):
     """))
 
 
+
+def generate_Z_arithm_questions(difficulty, number):
+    def question_Z_arithm_generator(difficulty):
+        fractions = False
+        return(str(randomExpression(0.05,difficulty, True, False, fractions)))
+
+    title = r"Volgorde van de bewerkingen"
+    advice = r"""
+    Vereenvoudig de volgende uitdrukkingen zoveel mogelijk in deze volgorde: (1) haakjes, (2) machten en wortels, (3) vermenigvuldiging en deling en (4) optelling en aftrekking.
+    \begin{itemize}
+    \item Bereken alle wortels exact of benader met gekende wortels. Bijvoorbeeld $\sqrt{5} \approx 2,24 ...$.
+    \item Exponenten groter dan $4$ hoeven niet berekend te worden. 
+    \end{itemize}
+    """
+    imperative = "Los op"
+    full_problems = generate_exercises( question_Z_arithm_generator,difficulty,number, title, advice, imperative)
+    return(full_problems)
+
+def generate_Q_sum_questions(difficulty, number):
+    def generate_fraction_add(difficulty):
+        max_nominator = max(10,10**(difficulty))
+        terms = randint(2,3)
+        for i in range(0,terms):
+            common_factor = randint(2,5)
+            nominator = recurse_factors(common_factor, max_nominator, even_powers=False)
+            denominator = recurse_factors(common_factor, max_nominator, even_powers=False)
+            fraction = PrefixBinaryExpression(Number(nominator),r'\frac', Number(denominator))
+            if i == 0:
+                fraction_sum = fraction
+            else : 
+                fraction_sum = MixfixBinaryExpression(fraction_sum,'+', fraction)
+        return(str(fraction_sum))
+
+    title = r"Optellen in Q"
+    advice = r"""
+    Vereenvoudig de termen (gebruik indien nodig een factorizatietabel), maak ze gelijknamig en tel ze op.
+    """
+    imperative = "Tel op"
+    full_problems = generate_exercises( generate_fraction_add,difficulty,number, title, advice, imperative)
+    return(full_problems)
+
+
 #add_exercises_knowledge(4,10)
-add_simple_arithmetic_exercises(4,10)
+#add_simple_arithmetic_exercises(4,10)
 
 
 #add_factorize_exercises(4,4)
@@ -694,26 +728,24 @@ add_simple_arithmetic_exercises(4,10)
 #add_simplify_root_exercises(3,10)
 #add_simplify_root_exercises(4,4)
 #s(max_depth,max_number_of_exercises,fractions, hard_exponents)
-questions_with_answers = generate_exercises_order_operations(2,10, fractions = False, hard_exponents= False)
+questions_with_answers = generate_Z_arithm_questions(3,4)
+
+
+questions_with_answers_fractions = generate_Q_sum_questions(2,2)
+
 #root_questions_with_answers = generate_simplify_root_exercises(2,4)
 #add_simplify_root_exercises(root_questions_with_answers, False)
-add_exercises_order_operations(questions_with_answers,False)
-
-questions_with_answers2 = generate_exercises_order_operations(4,6, fractions = False, hard_exponents= False)
-add_exercises_order_operations(questions_with_answers2,False)
-
-questions_with_answers3 = generate_exercises_order_operations(7,4, fractions = False, hard_exponents= False)
-add_exercises_order_operations(questions_with_answers3,False)
+add_exercises(questions_with_answers,False)
+add_exercises(questions_with_answers_fractions,False)
 #add_factorize_exercises(3,2)
 #add_factorize_exercises(3,4)
 #add_lcm_exercises(3,4)
-add_add_fractions_exercises(2,6)
+
 #add_add_fractions_exercises(3,4)
 
 doc.append(NoEscape(r"\part{Antwoorden}"))
-add_exercises_order_operations(questions_with_answers,True)
-add_exercises_order_operations(questions_with_answers2,True)
-add_exercises_order_operations(questions_with_answers3,True)
+add_exercises(questions_with_answers,True)
+add_exercises(questions_with_answers_fractions,True)
 # add_simplify_root_exercises(root_questions_with_answers, True)
 
 

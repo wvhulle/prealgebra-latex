@@ -11,7 +11,8 @@ from pylatex.utils import italic, escape_latex
 #from random import random, random.randint, choices,choice
 from sympy.ntheory import factorint
 import inspect
-
+from anytree import Node, RenderTree
+from anytree.util import leftsibling
 from numpy import prod
 import collections
 import regex
@@ -22,36 +23,24 @@ doc.documentclass = Command(
         options=['dutch','course','headersection','theoremsection','cleardoublepage','twoside'],
         arguments=['lecture'],
     )
-
-
-# on ubuntu sudo apt-cache search lastpage
-# 
-
 doc.preamble.append(NoEscape(r"""
-
-\usepackage{breqn}
-
-\title{Herhalingsoefeningen}
-\subtitle{Oefeningen over basiswiskunde}
+\title{Toets 3}
+\subtitle{Vergelijkingen in Z, bewerkingen in Q, evenredigheden, vraagstukken en procenten}
 \shorttitle{BASIS}
-\author{Willem Vanhulle}
-\email{willemvanhulle [at] gmail.com}
+\author{Student: \underline{\hspace{5cm}}}
+\speaker{Leerkracht: Willem Vanhulle}
+%\email{willemvanhulle [at] gmail.com}
 \date{16}{11}{2020}
 \dateend{12}{01}{2021} 
 \conference{Lessenreeks aan CVO Volt}
 \place{Leuven, Belgi\"e}
 \flag{Geschreven op \today}
-\attn{Opdrachten en testen voor studenten.}
- """))
-
-
-doc.append(NoEscape(r"""
+\attn{Derde toets voor studenten aan het CVO. De eerste oefeningen zijn alleen bedoeld voor studenten die een onvoldoende hadden voor de vorige testen en dienen als inhaaltoets.}
 
 %\maketitle
 
-%Signature \underline{\hspace{3cm}}
-	\vspace{3em}
-\textbf{Naam student:} \hrulefill\\
+%	\vspace{3em}
+%\textbf{Naam student:} \hrulefill\\
 
 %De moeilijkheidsgraad van elke oefening is aangegeven met een aantal ``*''-en. Schrijf berekeningen op als volgt:
 %\noindent
@@ -62,7 +51,9 @@ doc.append(NoEscape(r"""
     %\end{align*}
 """))
 
-
+def remove_frac(latex_expr):
+    expr  = regex.sub(r'\\frac\{((?>[^{}]+|\{(?1)\})*)\}\{((?>[^{}]+|\{(?1)\})*)\}', r'( (\1)/(\2))', latex_expr)
+    return(expr)
 
 
 def latex_string_to_sympy(rand_expr):
@@ -74,7 +65,6 @@ def latex_string_to_sympy(rand_expr):
     stripped_expr = regex.sub(r'\\right', ' ', stripped_expr) # bug in sympy
     stripped_expr = regex.sub(r'\\cdot', r'*', stripped_expr)
     stripped_expr = stripped_expr.replace(':','/')
-
     stripped_expr = regex.sub(r'\\kgv', r'\\lcm', stripped_expr)
     
     if "=" in stripped_expr:
@@ -86,21 +76,18 @@ def latex_string_to_sympy(rand_expr):
     
    # stripped_expr = re.sub(r'\{ *([^()]+?) *\})', r'$1', stripped_expr)
     while r'\frac' in stripped_expr:
-        #print("Stripping fraction from: ", stripped_expr)
-        stripped_expr
-        stripped_expr = regex.sub(r'\\frac\{((?>[^{}]+|\{(?1)\})*)\}\{((?>[^{}]+|\{(?1)\})*)\}', r'(\1)/(\2)', stripped_expr)
+        stripped_expr = remove_frac(stripped_expr)
     
     stripped_expr = stripped_expr.replace('$','')
     stripped_expr = stripped_expr.replace('\\','')
 
-    stripped_expr = stripped_expr.replace(':','/')
+    #stripped_expr = stripped_expr.replace(':','/')
     stripped_expr = stripped_expr.replace('{','(')
     stripped_expr = stripped_expr.replace('}',')')
     stripped_expr = stripped_expr.replace('^','**')
     #print('Parsing unlatexified:    ', stripped_expr)
     sympy_expr = parse_expr(stripped_expr, evaluate=False)
     return(sympy_expr)
-
 
 
 def add_exercises_knowledge( max_difficulty, max_number_of_exercises):
@@ -131,9 +118,6 @@ def add_exercises_knowledge( max_difficulty, max_number_of_exercises):
     \end{enumerate}
     \end{multicols}
     """))
-
-
-
 
 def add_long_division(length):
     # \opdiv[decimalsepsymbol={,},displayintermediary=all,resultstyle=\placeholder,carrystyle=\color{white},voperation=top]
@@ -201,8 +185,8 @@ def add_simple_arithmetic_exercises(digits,max_number_of_exercises):
         doc.append(NoEscape(r"""
         \item \begin{center}
         """))
-        #f = choice([add_multiplication, add_long_division, add_substraction,add_addition])
-        f = choice([add_multiplication, add_long_division, add_substraction])
+        #f = random.choice([add_multiplication, add_long_division, add_substraction,add_addition])
+        f = random.choice([add_multiplication, add_long_division, add_substraction])
 
         f(digits)
         doc.append(NoEscape(r"""
@@ -215,7 +199,7 @@ def add_simple_arithmetic_exercises(digits,max_number_of_exercises):
 
 
 def recurse_factors(previous_total_product,max_total_product, even_powers=False):
-    a = choice([-5,-4,-3,-2,-1,1,2,3,4,5])
+    a = random.choice([-5,-4,-3,-2,-1,1,2,3,4,5])
     if even_powers: b = 2*random.randint(1,2)
     else: b = random.randint(1,4)
     new_product = max_total_product
@@ -254,7 +238,7 @@ def generate_latex_question_with_answer(question_generator,difficulty, solver):
         ## check length to exclude weird questions
         
         
-        if len(sympy_string)>2*difficulty and len(sympy_string) < 8 *difficulty:
+        if len(sympy_string)>3*difficulty and len(sympy_string) <  10 *difficulty:
             
             # question might fit on a line and is not just a number
             reduce_ratio = len(latex_solution) / len(reduced_latex_question)
@@ -274,11 +258,9 @@ def generate_latex_question_with_answer(question_generator,difficulty, solver):
                  print('Reduction ratio skewed: ', str(reduce_ratio), 'with ideal ', str(ideal_ratio))
         else: 
             print('Parsing failed: Raw ',  rand_expr, '-> Sympy ', sympy_string, ' ->  Sympy Latex ' , reduced_latex_question, ' -> Solved Latex ',  latex_solution)
-
-
         loop += 1
 
-    if not loop < max_loop:
+    if loop >= max_loop:
         print('Generated too many long or short questions with generator ',  str(question_generator))
     return([latex_question_difficulty, [latex_question_math, hints],latex_answer_question_math, latex_answer_question_math_eval])
 
@@ -337,8 +319,8 @@ def add_exercises(full_qas, with_answers):
        # print('The initial questions is ', initial_question)
         hints = qa[1][1]
         #print('outputting question ', initial_question, ' with hints ', hints)
-        doc.append(NoEscape(r'\item ' + imperative + r': '))
-        doc.append(NoEscape(initial_question + r'. '))
+        doc.append(NoEscape(r'\begin{minipage}{\linewidth}  \item ' + imperative + r': '))
+        doc.append(NoEscape(initial_question))
         if not with_answers:
             if len(hints) > 0 :
                 # start hints
@@ -350,9 +332,10 @@ def add_exercises(full_qas, with_answers):
                     doc.append(NoEscape(rendered_hint))
                 # start emptylines
                 doc.append(NoEscape(r'\end{center}'))
-            doc.append(NoEscape(r'\derivblank{' + str(stars -1) +'}{'+derivsep+'}'))
+            #doc.append(NoEscape(r'\derivblank{' + str(stars -1) +'}{'+derivsep+'}'))
+            doc.append(NoEscape(r'\derivblank{' + str(2) +'}{'+derivsep+r'} \end{minipage} \\'))
         else:
-            doc.append(NoEscape(r'\derivblanksolution{' + qa[2] + '}{' + qa[3] + '}'))
+            doc.append(NoEscape(r'\derivblanksolution{' + qa[2] + '}{' + qa[3] + r'} \end{minipage} \\'))
     if with_answers:
         doc.append(NoEscape(r"""
         \end{enumerate}
@@ -394,10 +377,10 @@ def generate_Q_sum_questions(difficulty, number):
         terms = random.randint(2,3)
         for i in range(0,terms):
             # this is such that there is always a common factor in at least one of the terms so that students have to learn to simplify first (no minus signs yet)
-            common_factor = choice([*range(1,5)])
-            signnom = choice([-1,1])
+            common_factor = random.choice([*range(1,5)])
+            signnom = random.choice([-1,1])
             nominator = signnom*recurse_factors(common_factor, max_nominator, even_powers=False)
-            signden = choice([-1,1])
+            signden = random.choice([-1,1])
             denominator = signden*recurse_factors(common_factor, max_nominator, even_powers=False)
             fraction = PrefixBinaryWithCurlyBrackets(Number(nominator),r'\frac', Number(denominator))
             if i == 0:
@@ -425,7 +408,7 @@ def generate_lcm_questions(difficulty, number):
         max_total_product = max(10,10**(difficulty+1))
         product1 = recurse_factors(1, max_total_product, even_powers=False)
         product2 = recurse_factors(1, max_total_product, even_powers=False)
-        lcm_expr = UnaryWithCurvyBrackets(r'\lcm', MixfixWithoutCurlyBrackets(Number(product1),r', ',Number(product2)))
+        lcm_expr = PrefixUnaryWithCurvyBrackets(r'\lcm', MixfixWithoutCurlyBrackets(Number(product1),r', ',Number(product2)))
         subquestion1 = str(Number(product1))
         subquestion2 = str(Number(product2))
         output = [r''+str(lcm_expr), [subquestion1, subquestion2]]
@@ -489,21 +472,29 @@ class ParenthesizedExpression(Expression):
     def __str__(self):
         return r"\left(" + str(self.exp) + r'\right)'
 
-class UnaryExpression(Expression):
+class PrefixUnaryWithCurlyBrackets(Expression):
     def __init__(self, op, exp):
         self.op = op
         self.exp = exp
     def __str__(self):
         return self.op + "{" + str(self.exp) + "}"
 
-class UnaryWithoutCurlyBrackets(Expression):
+class PrefixUnaryWithoutCurlyBrackets(Expression):
     def __init__(self, op, exp):
         self.op = op
         self.exp = exp
     def __str__(self):
         return self.op + str(self.exp)
 
-class UnaryWithCurvyBrackets(Expression):
+class PostfixUnaryWithoutCurlyBrackets(Expression):
+    def __init__(self, op, exp):
+        self.op = op
+        self.exp = exp
+    def __str__(self):
+        return str(self.exp) +  self.op
+
+
+class PrefixUnaryWithCurvyBrackets(Expression):
     def __init__(self, op, exp):
         self.op = op
         self.exp = exp
@@ -518,38 +509,33 @@ class MathOp:
         self.pr = pr # precedence
         self.sp = sp # function of parent number to generate leaves or operand numbers
         self.ex = ex # function of leaves expressions to format full operator
-        self.ass = ass # associative relative to parent
+        self.ass = ass # in case of n-ary operators, visually separates arguments?
     def __str__(self):
         return "precedence: " + str(self.pr) + ", weight: " + str(self.li)
 
-identity_op = MathOp("id", lambda n : 0, 6, lambda n : [n], lambda le : UnaryWithoutCurlyBrackets("", le[0]),True)
+
+function_precedence = 5
+
+identity_op = MathOp("id", lambda n : 1/10, function_precedence, lambda n : [n], lambda le : PrefixUnaryWithoutCurlyBrackets("", le[0]),True)
 
 
 def li_neg(n):
     if n > 0:
-        l = 1/3
+        l = 1/6
     else:
-        l = 1/8
+        l = 1/10
     return(l)
 
-
-negate_op = MathOp("neg", li_neg, 3,lambda n : [-n] , lambda le : UnaryWithoutCurlyBrackets("-",le[0]),True)
-
+neg_print = lambda le : PrefixUnaryWithoutCurlyBrackets("-",le[0])
+negate_op = MathOp("neg", li_neg, 3,lambda n : [-n] , neg_print ,True)
 
 def li_root(current_integer): 
-#     factorization = factorint(int(current_integer))
-#     n = len(str(current_integer))
-#    # print(factorization.values())
-#     if all(power % 2 == 0 for power in factorization.values()):
-#         powers_even = True
-#     else:
-#         powers_even = False
-    # li = (current_integer >= 0)*4*int(powers_even)*1/(n)
-    #print("Sqrt prob is ", str(li))
-    li = 1/(3*(len(str(current_integer))*(current_integer<=20)+1))
+    li = 2/(5*(len(str(current_integer))*(current_integer<=20)+1))
     return(li)
 
-sqrt_op = MathOp("sqrt", li_root, 2, lambda x : [x**2], lambda le : UnaryExpression(r'\sqrt',le[0]),True)
+
+
+sqrt_op = MathOp("sqrt", li_root, function_precedence, lambda x : [x**2], lambda le : PrefixUnaryWithCurlyBrackets(r'\sqrt',le[0]),True)
 
 
 def li_pythagorean(current_integer):
@@ -579,6 +565,8 @@ def print_pythagorean(le):
 
 pythagorean_op= MathOp("pyth", li_pythagorean, 5,decompose_pythagorean, print_pythagorean, False)
 
+
+
 def li_power(current_integer):
     factorization = factorint(int(current_integer))
     unique_factors = list(set(list(factorization.keys())))
@@ -586,9 +574,9 @@ def li_power(current_integer):
         perfect_power = True
     else:
         perfect_power = False
-    n = len(str(current_integer))
+    #n = len(str(current_integer))
     
-    return((current_integer>=0)*int(perfect_power))
+    return(2*(current_integer>=0)*int(perfect_power))
 
 def decompose_power(current_integer):
     factorization = factorint(int(current_integer))
@@ -609,11 +597,12 @@ def smooth_number(max_digits):
     return(p2*p3*p5*p7)
 
 def likelihood_minus(ci):
-    return((1/4)*(ci > 1)*len(str(ci)))
+    return((1/4)*len(str(ci)))
+
 
 
 def minus_decompose(current_integer):
-     difference = random.randint(0, 2*current_integer)
+     difference = random.randint(-current_integer-10, current_integer+10)
      #smooth_number(int(log10(floor(abs(current_integer)+1))+1))
      term_1 = current_integer+difference
      term_2 = difference
@@ -622,13 +611,14 @@ def minus_decompose(current_integer):
 
 minus_op = MathOp("minus", likelihood_minus, 4, minus_decompose, lambda le  : MixfixWithoutCurlyBrackets(le[0], "-", le[1]), False)
 
+
 def plus_decompose(current_integer):
     m = abs(int(current_integer))
     term1_num = random.randint(-m,m)
     term2_num = floor(current_integer - term1_num)
     return([term1_num,term2_num])
 
-plus_op = MathOp("plus", lambda n : (1/6)*len(str(n)), 4, plus_decompose, lambda le  : MixfixWithoutCurlyBrackets(le[0], "+", le[1]), True)
+plus_op = MathOp("plus", lambda n : (1/4)*len(str(n)), 4, plus_decompose, lambda le  : MixfixWithoutCurlyBrackets(le[0], "+", le[1]), True)
 
 
 
@@ -640,7 +630,7 @@ def frac_decompose(current_integer):
         print("Fraction problem.")
     return([multiple,extra_factor])
 
-frac_op = MathOp("fraction", lambda n : 1/(len(str(n))), 3, frac_decompose, lambda le: PrefixBinaryWithCurlyBrackets(le[0], r'\frac',le[1]),True)
+frac_op = MathOp("fraction", lambda n : 1/(len(str(n))), 3, frac_decompose, lambda le: PrefixBinaryWithCurlyBrackets(le[0], r'\frac',le[1]),False)
 
 div_op = MathOp("division", lambda n : 1/(len(str(n))), 3, frac_decompose, lambda le: MixfixWithoutCurlyBrackets(le[0], r':',le[1]), False)
 
@@ -654,72 +644,116 @@ def mul_decompose(current_integer):
     factor2_num = a / factor1_num 
     return([int(sign*factor1_num),int(factor2_num)])
 
-mul_op=MathOp("mult", lambda n : (2/5)*len(str(n)), 3, mul_decompose, lambda le : MixfixWithoutCurlyBrackets(le[0], r' \cdot ', le[1]),True)
 
-linear_op = MathOp("unkown", lambda n : (2/len(str(n))), 2, lambda n : [n], lambda le :  UnaryWithoutCurlyBrackets(r' x\cdot  ', le[0]), True)
+def mul_likelihood(n):
+    l = (3/5)*len(str(n))*(n!=0)*(not sympy.isprime(n))
+    return(l)
+
+mul_op=MathOp("mult",mul_likelihood, 3, mul_decompose, lambda le : MixfixWithoutCurlyBrackets(le[0], r' \cdot ', le[1]),True)
+
+linear_op = MathOp("unknown x", lambda n : (2/len(str(n))), 2, lambda n : [n], lambda le :  PrefixUnaryWithoutCurlyBrackets(r' x\cdot  ', le[0]), True)
+
+
+parenthesis_op = MathOp("brackets", lambda n : 1, 0, lambda n : [n], lambda le : PrefixUnaryWithCurvyBrackets("",le[0]), True)
+
+
+def is_binary_op(op):
+    return(len(op.sp(10))>1)
 
 def find_indices(lst, condition):
     return [i for i, elem in enumerate(lst) if condition(elem)]
 
-def stackOperators(max_height,max_digits, operators,disposable_operators):
-    print("==================\nGenerating arithmetic expression...")
+
+def print_tree_simple(root):
+    for pre, _, node in RenderTree(root):
+        print("%s%s (precedence %s) argument: %s" % (pre, node.operator.name, node.operator.pr, node.number))
+
+def extend_tree(op,current_leaf):
+    current_integer = current_leaf.number
+    children_numbers = op.sp(current_integer)
+    #print("Splitting up "+str(current_integer)+" with operator "+str(op.name)+" into "+ str(op.sp(current_integer)))
+    current_leaf.render = op.ex
+    current_leaf.children = list(map(lambda n : Node(str(n), parent=current_leaf, number = n,render=lambda n : Number(n), operator=op),children_numbers))
+    first_child = current_leaf.children[0]
+    return(first_child)
+
+def is_right_argument(child_node):
+    return(leftsibling(child_node) != None) 
+
+def compute_solution_number(max_digits):
     max10 = max(20, 10**(max_digits-1))
     solution_number = random.randint(-max10,max10)
-    print("Solution will be "+ str(solution_number))
-    #solution_number =  smooth_number(max_digits)
-    #max_height = max_digits
+    return(solution_number)
 
-    
-    def stackOperators_rec(current_integer, height,parent_op,mask):
-
-        if (height == 0 or abs(current_integer) < 1):
-            e = Number(current_integer)
-            print("Reached end node " + str(current_integer))
-            return(e)
+def arithmetic_tree(max_height, max_digits, operators, single_use_operators):
+    print("==================\nGenerating arithmetic expression...")
+    solution_number = compute_solution_number(max_digits)
+    print("Solution should be "+ str(solution_number))
+    root = Node(str(solution_number), parent=None, number=solution_number,operator=identity_op)
+    #max_n_operators = len(single_use_operators)+int(len(operators))
+    single_use_used = 0
+    operator_list = []
+    for i in range(max_height):
+        r = random.random()
+        if single_use_used < len(single_use_operators) and r < 0.8:
+            new_op = single_use_operators[single_use_used]
+            operator_list.append(new_op)
+            single_use_used = single_use_used + 1
         else:
-            weights = list(map(lambda op : op.li(current_integer),operators))
-            disposable_weights = list(map(lambda op : op.li(current_integer),disposable_operators))
-            remaining_weights = [a*b for a,b in zip(disposable_weights,mask)]
-            op=random.choices(population=(operators + disposable_operators),
-            weights=weights+remaining_weights,k=1)[0]
-            
-            
-            if op in disposable_operators:
-                # decrease weight 
-                i = disposable_operators.index(op)
-                mask[i] = 0
-            leaves = list(map(lambda leaf : stackOperators_rec(leaf, height-1,op,mask), op.sp(current_integer)))
-            
-            print("Splitting up "+str(current_integer)+" at height " +str(height)+" with operator "+str(op.name)+" into "+ str(op.sp(current_integer)))
-            parenthesis_hints = True
-            #print((op.ex(leaves)))
-            if parent_op.pr < op.pr:
-                # adding brackets so that steps are respected
-                return(ParenthesizedExpression(op.ex(leaves)))
-            elif (parent_op.pr == op.pr and (not parent_op.ass)) and parenthesis_hints:
-                return(ParenthesizedExpression(op.ex(leaves)))
-            else:
-                return(op.ex(leaves))
-    if solution_number >= 0:
-        latex_math_expr = stackOperators_rec(solution_number,max_height, identity_op,[20] * len(disposable_operators))
+            operator_list.append(random.choices(operators)[0])
+    for op in operator_list: 
+        leaf_weights = list(map((lambda leaf : op.li(leaf.number)),list(root.leaves)))
+        current_leaf =  random.choices(population=root.leaves, weights=leaf_weights)[0]
+        ## it is possible that this leaf is actually not appropriate,
+        if current_leaf.number < 0:
+            # we have to turn it in a negation operator
+            current_leaf = extend_tree(negate_op, current_leaf)
+        if not current_leaf.is_root:
+            parent_op = current_leaf.operator
+            non_associativity =  (is_binary_op(parent_op) and is_binary_op(op) and is_right_argument(current_leaf) and (not parent_op.ass) and (op.pr == parent_op.pr))
+            precendence_problem = (is_binary_op(op) and parent_op.pr < op.pr)
+            put_brackets_around_leaf =  precendence_problem or non_associativity  and parent_op != identity_op and parent_op != parenthesis_op
+
+            print("Parent operator: "+str(parent_op.name)+", current number: "+str(current_leaf.number)+", new operator: "+str(op.name)+", is guarded with  brackets: "+str(put_brackets_around_leaf))
+
+            if put_brackets_around_leaf:
+                
+                current_leaf = extend_tree(parenthesis_op, current_leaf)
+
+        if op.li(current_leaf.number) > 0:
+            extend_tree(op, current_leaf)
+    print_tree_simple(root)
+    return(root)
+
+def test_division():
+    arithmetic_tree(3, 2, [div_op], [power_op])
+
+
+def test_minus_neg():
+    arithmetic_tree(3, 2, [minus_op, negate_op], [plus_op])
+def render_tree(node):
+    if node.is_leaf:
+        return(node.render(node.number))
     else:
-        latex_math_expr = UnaryWithoutCurlyBrackets("-", stackOperators_rec(-solution_number,max_height, negate_op,[20] * len(disposable_operators)))
+        return(node.render(list(map(render_tree, node.children))))
+
+def stackOperators(max_height,max_digits, operators,single_use_operators):
+
+    root = arithmetic_tree(max_height, max_digits, operators, single_use_operators)
+    latex_math_expr = render_tree(root)
     print("Generated expression: "+ str(latex_math_expr))
-
     actual_solution = N(latex_string_to_sympy(str(latex_math_expr)))
-
+    solution_number = compute_solution_number(max_digits)
     if actual_solution != solution_number:
-        print("Actual solution: "+str(actual_solution))
-        #print(inspect.getmro(latex_math_expr.__class__))
-        print("Does not compute to goal.")
+        print("Actual solution "+str(actual_solution)+"is not equal to "+str(solution_number))
     return(latex_math_expr )      
             
 
 
 def question_Q_arithm_generator2(difficulty):
         hints = []
-        ops = [minus_op, negate_op, sqrt_op,plus_op,frac_op,mul_op,power_op,pythagorean_op,div_op ]
-        main_question = str(stackOperators(4,2,ops,[]))
+        ops = [minus_op,identity_op, negate_op, sqrt_op,plus_op,frac_op,mul_op,power_op,pythagorean_op,div_op ]
+        main_question = str(stackOperators(difficulty,2,ops,[]))
         #print(main_question)
         return([main_question,hints])
 
@@ -732,16 +766,24 @@ def generate_Q_arithm_questions(difficulty, number):
     imperative = "Los op"
     hint_renderer = lambda x : x
     solver = sympy.simplify
-    full_problems = generate_exercises( question_Q_arithm_generator2,difficulty+2,number, title, advice, imperative,hint_renderer,solver)
+    full_problems = generate_exercises( question_Q_arithm_generator2,difficulty,number, title, advice, imperative,hint_renderer,solver)
     return(full_problems)
 
 
 def generate_Z_unknown_questions(difficulty, number):
     def question_Z_unknown_generator(difficulty):
         hints = []
-        ops = [minus_op,identity_op, negate_op,sqrt_op,plus_op,mul_op,div_op,power_op,pythagorean_op ]
-        left_eq = str(stackOperators(3,2,ops,[]))
-        right_eq = str(stackOperators(3,2,ops,[linear_op]))
+        ops = [minus_op,identity_op,negate_op,plus_op,mul_op,power_op,pythagorean_op,div_op]
+        prop_ops =  [linear_op]
+        random.shuffle(prop_ops)
+        without_x = str(stackOperators(difficulty,2,ops,[plus_op,mul_op]))
+        with_x = str(stackOperators(difficulty,2,ops,prop_ops))
+        if random.random() < 0.5:
+            left_eq = with_x
+            right_eq = without_x
+        else:
+            left_eq = without_x
+            right_eq = with_x
         main_question = left_eq + r'='+right_eq
         return([main_question,hints])
     title = r"Vergelijkingen in Z"
@@ -753,18 +795,18 @@ def generate_Z_unknown_questions(difficulty, number):
     def solver(eq):
         return(sympy.solve(eq,sympy.Symbol('x')))
         
-    full_problems = generate_exercises( question_Z_unknown_generator,difficulty+2,number, title, advice, imperative,hint_renderer,solver)
+    full_problems = generate_exercises( question_Z_unknown_generator,difficulty,number, title, advice, imperative,hint_renderer,solver)
     return(full_problems)
 
 #import random
 def generate_proportions(difficulty, number):
     def question_proportions_generator(difficulty):
         hints = []
-        ops = [minus_op,negate_op,plus_op,mul_op,power_op,pythagorean_op]
-        prop_ops =  [frac_op, mul_op, linear_op]
+        ops = [identity_op,minus_op,negate_op,plus_op,mul_op,power_op,pythagorean_op]
+        prop_ops =  [frac_op, linear_op]
         random.shuffle(prop_ops)
-        without_x = str(stackOperators(3,2,ops,[frac_op]))
-        with_x = str(stackOperators(3,2,ops,prop_ops))
+        without_x = str(stackOperators(difficulty,2,ops,[frac_op]))
+        with_x = str(stackOperators(difficulty,2,ops,prop_ops))
         if random.random() < 0.5:
             left_eq = with_x
             right_eq = without_x
@@ -782,10 +824,8 @@ def generate_proportions(difficulty, number):
     def solver(eq):
         return(sympy.solve(eq,sympy.Symbol('x')))
         
-    full_problems = generate_exercises( question_proportions_generator,difficulty+2,number, title, advice, imperative,hint_renderer,solver)
+    full_problems = generate_exercises( question_proportions_generator,difficulty,number, title, advice, imperative,hint_renderer,solver)
     return(full_problems)
-
-
 
 def generate_Z_root_questions(difficulty, number):
     def question_Z_root_generator(difficulty):
@@ -796,7 +836,7 @@ def generate_Z_root_questions(difficulty, number):
         while loops < max_loops and not found :
             perfect_square = recurse_factors(1,max_radicand, even_powers=True)
             if (max_radicand/20 < perfect_square) and (perfect_square < max_radicand):
-                root = str(UnaryExpression(r'\sqrt', Number(perfect_square)))
+                root = str(PrefixUnaryWithCurlyBrackets(r'\sqrt', Number(perfect_square)))
                 found = True
             loops += 1
         hints = []
@@ -863,59 +903,107 @@ def generate_N_division_questions(difficulty, number):
     hinter = lambda x : x
     solver = sympy.simplify
     full_problems = generate_exercises(question_N_division_generator,difficulty+1,number, title, advice, imperative,hinter,solver)
+
+
     return(full_problems)
 
+generate_pdf_with_questions([generate_Q_arithm_questions(6,6), generate_Z_unknown_questions(3,4),generate_proportions(3,4)])
 
 
-# Generate all the questions with answers
-full_sections_with_answers = []
-#full_sections_with_answers.append(generate_N_division_questions(3,10))
-#full_sections_with_answers.append(generate_lcm_questions(2,4))
-#full_sections_with_answers.append(generate_Z_root_questions(3,10))
-#full_sections_with_answers.append(generate_Z_arithm_questions(3,10))
-#full_sections_with_answers.append(generate_Z_arithm_questions(5,4))
-#full_sections_with_answers.append(generate_Q_simplify_questions(3,4))
-#full_sections_with_answers.append(generate_Q_sum_questions(3,10))
-#full_sections_with_answers.append(generate_Z_arithm_questions(3,4))
-#full_sections_with_answers.append(generate_Q_arithm_questions(3,4))
-#full_sections_with_answers.append(generate_Q_arithm_questions(5,4))
-full_sections_with_answers.append(generate_Q_arithm_questions(4,6))
-#full_sections_with_answers.append(generate_Z_unknown_questions(3,20))
-#full_sections_with_answers.append(generate_proportions(2,4))
+def generate_pdf_with_questions(latex_section_list):
+    doc.append(NoEscape(r"\part{Vragen}"))
+    for full_section in latex_section_list:
+        add_exercises(full_section,False)
+    # doc.append(NoEscape(r"""
+    # \section{Omgekeerd of recht evenredig}
+
+    # \begin{enumerate}
+    # \item De bakker spuit slagroomtoefjes op de rand van de taart.  Hoe groter de taart, hoe \underline{\hspace{2cm}}  slagroomtoefjes. Omgekeerd of recht evenredig?
+    # \item Ik ga de muur van mijn klaslokaal verven.  Hoe groter het lokaal, hoe \underline{\hspace{2cm}} verf ik nodig heb. Omgekeerd of recht evenredig?
+    # \item Ik wil de muur van mijn badkamer betegelen.  Hoe groter de tegels die ik gebruik, hoe \underline{\hspace{2cm}} tegels ik nodig heb. Omgekeerd of recht evenredig?
+    # \item We gaan op uitstap met de trein.  Hoe verder we gaan hoe \underline{\hspace{2cm}} een treinticket kost. Omgekeerd of recht evenredig?
+    # \end{enumerate}
+    # """))
 
 
-doc.append(NoEscape(r"\part{Vragen}"))
+    # doc.append(NoEscape(r"""
+    # \section{Vraagstukken over evenredigheden}
 
-# Not yet automated
-#add_simple_arithmetic_exercises(4,10)
-#add_simplify_fractions_exercises(3, 10)
-#root_questions_with_answers = generate_simplify_root_exercises(2,4)
-#add_simplify_root_exercises(root_questions_with_answers, False)
+    # \begin{enumerate}
 
+    # \item Een huis, dat in werkelijkheid 12 m breed is, meet op een plan slechts 8 cm. Hoe breed is de straat in werkelijkheid als ze op het plan 4,2 cm breed is?
+    # \vspace{3cm}
 
-#generate_simplify_root_exercises(4,10)
-for full_section in full_sections_with_answers:
-    add_exercises(full_section,False)
-doc.append(NoEscape(r"\part{Antwoorden}"))
-for full_section in full_sections_with_answers:
-    add_exercises(full_section,True)
-#add_factorize_exercises(3,2)
-#add_factorize_exercises(3,4)
-#add_lcm_exercises(3,4)
+    # \item Als 7 identieke DVD-spelers 2240 EUR kosten, hoeveel kosten dan 17 van die DVD-spelers?
+    # \vspace{3cm}
 
-#add_add_fractions_exercises(3,4)
+    # \item 36 leerlingen betaalden elk 27,30 EUR voor een studiereis naar Brussel. Als de bus volzet was geweest, had elke leerling 9,10 EUR minder moeten betalen? Hoeveel leerlingen konden mee in die bus?
+    # \vspace{3cm}
 
-# Print out the questions with answers in Latex
-# add_simplify_root_exercises(root_questions_with_answers, True)
+    # \item In een fabriek wordt 40 uur per week gewerkt met 57 machines. Hoeveel machines moeten gebruikt worden als er slechts 38 uur per week wordt gewerkt en men de productie op hetzelfde peil wil houden?
+    # \vspace{3cm}
+
+    # \item Een tank kan door 8 pompen leeggepompt worden in 42 minuten. Nu zijn echter 2 pompen defect geraakt. Hoeveel tijd hebben de overblijvende pompen voor dit werk nodig?
+    # \vspace{3cm}
 
 
-#add_exercise_order_operations(6,20, fractions = False, hard_exponents = False)
-#add_simplify_fractions_exercises(3,10)
-#add_lcm_exercises(2,10)
-#add_add_fractions_exercises(1,10)
-#add_add_fractions_exercises(3,10)
-#add_exercise_order_operations(5,20, fractions = True, hard_exponents= False)
-#add_exercise_order_operations(7,20, fractions = False, hard_exponents= False)
+    # \end{enumerate}
 
-doc.generate_tex('assignment')
-doc.generate_pdf('assignment', silent=True)
+    # """))
+
+
+    # doc.append(NoEscape(r"""
+    # \section{Vraagstukken over percentages}
+
+    # \begin{enumerate}
+
+    # \item Bereken 75 \% van 400.
+    # \vspace{2cm}
+
+    # \item  100 \% van 60 is x. Wat is x? 
+    # \vspace{2cm}
+    # \item Wat is 50 \% van 800?
+    # \vspace{2cm}
+    # \item 20 \% van x is 40. Zoek x.
+    # \vspace{2cm}
+
+    # \item Per dag loggen 4.960.000 Belgen in op Facebook. In totaal zijn er 6.200.000 Belgen actief op Facebook. Hoeveel procent van de Belgen die op Facebook actief 
+    # zijn loggen dagelijks in op Facebook? (Rond af op een heel procent.) Noteer je berekening.
+    # \vspace{3cm}
+
+    # \item Van de 91 minuten die de gemiddelde Belg dagelijks op internet surft, besteedt hij 20 minuten op 
+    # Facebook. Hoeveel procent van de tijd surft een gemiddelde Belg naar Facebook, als hij op het 
+    # internet zit? (Rond af op een heel procent.) Noteer je berekening.
+    # \vspace{3cm}
+
+
+
+
+    # \end{enumerate}
+
+    # """))
+
+
+    doc.append(NoEscape(r"\part{Antwoorden}"))
+    for full_section in assignmentStructure:
+        add_exercises(full_section,True)
+    #add_factorize_exercises(3,2)
+    #add_factorize_exercises(3,4)
+    #add_lcm_exercises(3,4)
+
+    #add_add_fractions_exercises(3,4)
+
+    # Print out the questions with answers in Latex
+    # add_simplify_root_exercises(root_questions_with_answers, True)
+
+
+    #add_exercise_order_operations(6,20, fractions = False, hard_exponents = False)
+    #add_simplify_fractions_exercises(3,10)
+    #add_lcm_exercises(2,10)
+    #add_add_fractions_exercises(1,10)
+    #add_add_fractions_exercises(3,10)
+    #add_exercise_order_operations(5,20, fractions = True, hard_exponents= False)
+    #add_exercise_order_operations(7,20, fractions = False, hard_exponents= False)
+
+    doc.generate_tex('assignment')
+    doc.generate_pdf('assignment', silent=True)

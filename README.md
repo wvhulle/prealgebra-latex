@@ -1,4 +1,4 @@
-# Learning mathematical operators
+# Teaching mathematical operators
 
 ## Worksheet generation
 This Python script generates different types of arithmetic exercises in LaTeX for math teaching. The result is a `.pdf` file that contains question with enough blank space and answers at the end for the teacher. 

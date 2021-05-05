@@ -326,33 +326,33 @@
 
 
 
-\textsc{\newcommand*{\annot}[1]{\tag*{\footnotesize{\textcolor{black!40}{\(#1\)}}}}
-\newcommand*{\mystrut}{\rule(-0.05\baselineskip){0pt}{1.2\baselineskip}}
-\newcommand*{\mybox}[1]{\textcolor{black!40}{\framebox{\mystrut #1}}}
+% \textsc{\newcommand*{\annot}[1]{\tag*{\footnotesize{\textcolor{black!40}{\(#1\)}}}}
+% \newcommand*{\mystrut}{\rule(-0.05\baselineskip){0pt}{1.2\baselineskip}}
+% \newcommand*{\mybox}[1]{\textcolor{black!40}{\framebox{\mystrut #1}}}
 
-% Code to render multiple blank lines for a algebraic derivation. Hints can be written by students of lines on the right.
-\newcommand{\derivblank}[1]{%
-	\begin{align*}
-	\xderivblank{#1}%
-	&=  \hspace{0.2cm}  \mybox{\underline{ \hspace{0.5\linewidth}}} \annot{\underline{\hspace{0.3\linewidth}}}
-	\end{align*}
-}
-\newcommand\xderivblank[1]{%
-	\ifnum#1=0 \else
-	&= \hspace{0.2cm}\textcolor{black!40}{\underline{\mystrut\hspace{0.5\linewidth}}} \annot{\underline{\hspace{0.3\linewidth}}} \\
-	\xderivblank{\numexpr#1-1}\fi}
+% % Code to render multiple blank lines for a algebraic derivation. Hints can be written by students of lines on the right.
+% \newcommand{\derivblank}[1]{%
+% 	\begin{align*}
+% 	\xderivblank{#1}%
+% 	&=  \hspace{0.2cm}  \mybox{\underline{ \hspace{0.5\linewidth}}} \annot{\underline{\hspace{0.3\linewidth}}}
+% 	\end{align*}
+% }
+% \newcommand\xderivblank[1]{%
+% 	\ifnum#1=0 \else
+% 	&= \hspace{0.2cm}\textcolor{black!40}{\underline{\mystrut\hspace{0.5\linewidth}}} \annot{\underline{\hspace{0.3\linewidth}}} \\
+% 	\xderivblank{\numexpr#1-1}\fi}
 
-% Code to write multiple lines of equivalent equations.
-\newcommand{\eqblank}[1]{%
-	\begin{align*}
-	\xeqblank{#1}%
-	&\Leftrightarrow  \hspace{0.2cm}  \mybox{\underline{ \hspace{0.5\linewidth}}} \annot{\underline{\hspace{0.3\linewidth}}}
-	\end{align*}
-}
-\newcommand\xeqblank[1]{%
-	\ifnum#1=0 \else
-	&\Leftrightarrow \hspace{0.2cm}\underline{\mystrut\hspace{0.5\linewidth}} \annot{\underline{\hspace{0.3\linewidth}}} \\
-	\xeqblank{\numexpr#1-1}\fi}}
+% % Code to write multiple lines of equivalent equations.
+% \newcommand{\eqblank}[1]{%
+% 	\begin{align*}
+% 	\xeqblank{#1}%
+% 	&\Leftrightarrow  \hspace{0.2cm}  \mybox{\underline{ \hspace{0.5\linewidth}}} \annot{\underline{\hspace{0.3\linewidth}}}
+% 	\end{align*}
+% }
+% \newcommand\xeqblank[1]{%
+% 	\ifnum#1=0 \else
+% 	&\Leftrightarrow \hspace{0.2cm}\underline{\mystrut\hspace{0.5\linewidth}} \annot{\underline{\hspace{0.3\linewidth}}} \\
+% 	\xeqblank{\numexpr#1-1}\fi}}
 
 
 

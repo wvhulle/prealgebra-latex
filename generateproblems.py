@@ -7,7 +7,8 @@ from sympy.parsing.latex import parse_latex
 from sympy.parsing.sympy_parser import standard_transformations,implicit_multiplication_application
 from pylatex import Command,Document, Package, NoEscape, Section
 from pylatex.utils import italic, escape_latex
-#import inspect
+#from random import random, random.randint, choices,choice
+import inspect
 from anytree import Node, RenderTree, AsciiStyle, LevelOrderIter,PreOrderIter
 from anytree.util import leftsibling, rightsibling
 import collections
@@ -89,7 +90,7 @@ def generate_latex_question_with_answer(question_generator,difficulty, solver):
     return([latex_question_difficulty, [latex_question_math, hints],latex_answer_question_math, latex_answer_question_math_eval])
 
 
-#TODO this is not very pretty, make data structure from questions
+
 
 def generate_exercises(question_generator,max_depth,max_number_of_exercises, title, advice, imperative,render_factorize_hint,solver):
     # Generate questions
@@ -97,6 +98,7 @@ def generate_exercises(question_generator,max_depth,max_number_of_exercises, tit
     for i in range(max_number_of_exercises):
         difficulty = random.randint(ceil(max_depth/2),max_depth)
         qa = generate_latex_question_with_answer(question_generator, difficulty,solver)
+        
         qas.append(qa)
     return([title,advice,imperative,qas,render_factorize_hint])
 
@@ -169,6 +171,11 @@ def add_exercises(doc, full_qas, with_answers):
         \end{enumerate}
         %\end{multicols}
         """))
+
+# TODO: question types: simplify, factorize/expand
+
+
+
 
 def print_tree_simple(root):
     for pre, _, node in RenderTree(root):
@@ -355,6 +362,8 @@ def generate_proportions(difficulty, number):
     full_problems = generate_exercises( question_proportions_generator,difficulty,number, title, advice, imperative,hint_renderer,solver)
     return(full_problems)
 
+
+
 def generate_N_division_questions(difficulty, number):
     def question_N_division_generator(difficulty):
         dn = abs(random.randint(10**(difficulty),10**difficulty+1))
@@ -432,5 +441,5 @@ def generate_pdf_with_questions(latex_section_list):
     doc.generate_tex('build/assignment')
     doc.generate_pdf('build/assignment', silent=True)
 
-problemlist = [generate_Q_arithm_questions(6,20), generate_Z_unknown_questions(3,4),generate_proportions(3,4)]
-generate_pdf_with_questions(problemlist)
+
+generate_pdf_with_questions([generate_Q_arithm_questions(6,20), generate_Z_unknown_questions(3,4),generate_proportions(3,4)])

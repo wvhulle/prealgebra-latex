@@ -1,9 +1,21 @@
-difficulty;question;natural_question
-0;-\sqrt{0^0};"Los op: "
-0;(-1)^{154};"Los op: "
-0;\sqrt{256};"Los op: "
-0;\sqrt{324};"Los op: "
-1;6^3;"Los op: "
-1;-(-45):(-5);"Los op: "
-1;\sqrt{4}-\sqrt{16};"Los op: "
-0;3^2;"Hoe noemt $2$ in deze uitdrukking: "
+topics list;source URL;average age;dutch context;dutch imperative;simplified identity;expanded identity;latex math example expression;latex math solution
+;;0;;Hoe noemt $2$ in deze uitdrukking:;;;;
+;;0;;Los op;;;(-1)^{154};
+;;0;;Los op;;;\sqrt{256};
+;;0;;Los op;;;\sqrt{324};
+;;1;;Los op;;;6^3;
+;;1;;Los op;;;-(-45):(-5);
+;;1;;Los op;;;\sqrt{4}-\sqrt{16};
+omgekeerd evenredig;;0;De bakker spuit slagroomtoefjes op de rand van de taart.  Hoe groter de taart, hoe \underline{\hspace{2cm}}  slagroomtoefjes. Omgekeerd of recht evenredig?;;;;3^2;
+omgekeerd evenredig;"";"";Ik ga de muur van mijn klaslokaal verven.  Hoe groter het lokaal, hoe \underline{\hspace{2cm}} verf ik nodig heb. Omgekeerd of recht evenredig?;"";"";"";"";""
+omgekeerd evenredig;"";"";Ik wil de muur van mijn badkamer betegelen.  Hoe groter de tegels die ik gebruik, hoe \underline{\hspace{2cm}} tegels ik nodig heb. Omgekeerd of recht evenredig?;"";"";"";"";""
+omgekeerd evenredig;"";"";We gaan op uitstap met de trein.  Hoe verder we gaan hoe \underline{\hspace{2cm}} een treinticket kost. Omgekeerd of recht evenredig?;"";"";"";"";""
+evenredigheden oplossen;"";"";"Een huis, dat in werkelijkheid 12 m breed is, meet op een plan slechts 8 cm. Hoe breed is de straat in werkelijkheid als ze op het plan 4,2 cm breed is? \vspace{3cm}";"";"";"";"";""
+evenredigheden oplossen;"";"";Als 7 identieke DVD-spelers 2240 EUR kosten, hoeveel kosten dan 17 van die DVD-spelers?;"";"";"";"";""
+evenredigheden oplossen;"";"";36 leerlingen betaalden elk 27,30 EUR voor een studiereis naar Brussel. Als de bus volzet was geweest, had elke leerling 9,10 EUR minder moeten betalen? Hoeveel leerlingen konden mee in die bus?;"";"";"";"";""
+evenredigheden oplossen;"";"";In een fabriek wordt 40 uur per week gewerkt met 57 machines. Hoeveel machines moeten gebruikt worden als er slechts 38 uur per week wordt gewerkt en men de productie op hetzelfde peil wil houden?;"";"";"";"";""
+evenredigheden oplossen;"";"";Een tank kan door 8 pompen leeggepompt worden in 42 minuten. Nu zijn echter 2 pompen defect geraakt. Hoeveel tijd hebben de overblijvende pompen voor dit werk nodig?;"";"";"";"";""
+percentages berekenen;"";"";Per dag loggen 4.960.000 Belgen in op Facebook. In totaal zijn er 6.200.000 Belgen actief op Facebook. Hoeveel procent van de Belgen die op Facebook actief zijn loggen dagelijks in op Facebook? (Rond af op een heel procent.) Noteer je berekening.;"";"";"";"";""
+percentages berekenen;"";"";Van de 91 minuten die de gemiddelde Belg dagelijks op internet surft, besteedt hij 20 minuten op  Facebook. Hoeveel procent van de tijd surft een gemiddelde Belg naar Facebook, als hij op het internet zit? (Rond af op een heel procent.) Noteer je berekening.;"";"";"";"";""
+"";"";"";;"";"";"";"";""
+"";"";"";"";"";"";"";"";""

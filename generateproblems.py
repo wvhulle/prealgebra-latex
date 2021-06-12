@@ -61,8 +61,6 @@ def generate_latex_question_with_answer(question_generator,difficulty, solver):
         latex_solution = str(sympy.latex(solutions))
         
         ## check length to exclude weird questions
-        
-        
         if len(sympy_string)>3*difficulty and len(sympy_string) <  10 *difficulty:
             
             # question might fit on a line and is not just a number

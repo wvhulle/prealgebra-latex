@@ -74,7 +74,7 @@ class PrefixUnaryWithCurvyBrackets(Expression):
         return self.op + r'\left(' + str(self.exp) + r'\right)'
         #return self.op + r'(' + str(self.exp) + r')'
 
-class MathOp:
+class RandomInverseOperator:
     def __init__(self,name, li,pr,sp,ex,ass):
         self.name =name
         self.likelihood_number_is_output = li # probability as function of parent number in tree
@@ -88,7 +88,7 @@ class MathOp:
 
 function_precedence = 5
 
-identity_op = MathOp("id", lambda n : 1/10, function_precedence, lambda n : [n], lambda le : PrefixUnaryWithoutCurlyBrackets("", le[0]),"none")
+identity_op = RandomInverseOperator("id", lambda n : 1/10, function_precedence, lambda n : [n], lambda le : PrefixUnaryWithoutCurlyBrackets("", le[0]),"none")
 
 
 def li_neg(n):
@@ -99,13 +99,13 @@ def li_neg(n):
     return(l)
 
 neg_print = lambda le : PrefixUnaryWithoutCurlyBrackets("-",le[0])
-negate_op = MathOp("neg", li_neg, 3,lambda n : [-n] , neg_print ,True)
+negate_op = RandomInverseOperator("neg", li_neg, 3,lambda n : [-n] , neg_print ,True)
 
 def li_root(current_integer): 
     li = 2/(5*(len(str(current_integer))*(current_integer<=20)+1))
     return(li)
 
-sqrt_op = MathOp("sqrt", li_root, function_precedence, lambda x : [x**2], lambda le : PrefixUnaryWithCurlyBrackets(r'\sqrt',le[0]),"none")
+sqrt_op = RandomInverseOperator("sqrt", li_root, function_precedence, lambda x : [x**2], lambda le : PrefixUnaryWithCurlyBrackets(r'\sqrt',le[0]),"none")
 
 
 def li_pythagorean(current_integer):
@@ -133,7 +133,7 @@ def print_pythagorean(le):
     expr = MixfixWithoutCurlyBrackets(MixfixWithCurlyBrackets(le[0], '^', le[1]), "+", MixfixWithCurlyBrackets(le[2], '^', le[3]))
     return(expr)
 
-pythagorean_op= MathOp("pyth", li_pythagorean, function_precedence,decompose_pythagorean, print_pythagorean, "none")
+pythagorean_op= RandomInverseOperator("pyth", li_pythagorean, function_precedence,decompose_pythagorean, print_pythagorean, "none")
 
 
 
@@ -155,7 +155,7 @@ def decompose_power(current_integer):
     return([base, power])
     # (MixfixWithCurlyBrackets(base, operator, power))
 
-power_op = MathOp("power", li_power, 2, decompose_power, lambda le : (MixfixWithCurlyBrackets(le[0], r'^', le[1]) ), "right")
+power_op = RandomInverseOperator("power", li_power, 2, decompose_power, lambda le : (MixfixWithCurlyBrackets(le[0], r'^', le[1]) ), "right")
 
 def smooth_number(max_digits):
     max10 = 10**(max_digits-1)
@@ -179,7 +179,7 @@ def minus_decompose(current_integer):
      return([term_1,term_2])
 
 
-minus_op = MathOp("minus", likelihood_minus, 4, minus_decompose, lambda le  : MixfixWithoutCurlyBrackets(le[0], "-", le[1]), "left")
+minus_op = RandomInverseOperator("minus", likelihood_minus, 4, minus_decompose, lambda le  : MixfixWithoutCurlyBrackets(le[0], "-", le[1]), "left")
 
 
 def plus_decompose(current_integer):
@@ -188,7 +188,7 @@ def plus_decompose(current_integer):
     term2_num = floor(current_integer - term1_num)
     return([term1_num,term2_num])
 
-plus_op = MathOp("plus", lambda n : (1/4)*len(str(n)), 4, plus_decompose, lambda le  : MixfixWithoutCurlyBrackets(le[0], "+", le[1]), "none")
+plus_op = RandomInverseOperator("plus", lambda n : (1/4)*len(str(n)), 4, plus_decompose, lambda le  : MixfixWithoutCurlyBrackets(le[0], "+", le[1]), "none")
 
 
 
@@ -200,9 +200,9 @@ def frac_decompose(current_integer):
         print("Fraction problem.")
     return([multiple,extra_factor])
 
-frac_op = MathOp("fraction", lambda n : 1/(len(str(n))), 3, frac_decompose, lambda le: PrefixBinaryWithCurlyBrackets(le[0], r'\frac',le[1]),"none")
+frac_op = RandomInverseOperator("fraction", lambda n : 1/(len(str(n))), 3, frac_decompose, lambda le: PrefixBinaryWithCurlyBrackets(le[0], r'\frac',le[1]),"none")
 
-div_op = MathOp("division", lambda n : 1/(len(str(n))), 3, frac_decompose, lambda le: MixfixWithoutCurlyBrackets(le[0], r':',le[1]), "left")
+div_op = RandomInverseOperator("division", lambda n : 1/(len(str(n))), 3, frac_decompose, lambda le: MixfixWithoutCurlyBrackets(le[0], r':',le[1]), "left")
 
 def mul_decompose(current_integer):
     a = abs(current_integer)
@@ -219,14 +219,14 @@ def mul_likelihood(n):
     l = (3/5)*len(str(n))*(n!=0)*(not sympy.isprime(n))
     return(l)
 
-mul_op=MathOp("mult",mul_likelihood, 3, mul_decompose, lambda le : MixfixWithoutCurlyBrackets(le[0], r' \cdot ', le[1]),"none")
+mul_op=RandomInverseOperator("mult",mul_likelihood, 3, mul_decompose, lambda le : MixfixWithoutCurlyBrackets(le[0], r' \cdot ', le[1]),"none")
 
-linear_op = MathOp("unknown x", lambda n : (2/len(str(n))), 3, lambda n : [n], lambda le :  PrefixUnaryWithoutCurlyBrackets(r' x\cdot  ', le[0]), "none")
+linear_op = RandomInverseOperator("unknown x", lambda n : (2/len(str(n))), 3, lambda n : [n], lambda le :  PrefixUnaryWithoutCurlyBrackets(r' x\cdot  ', le[0]), "none")
 
 
-parenthesis_op = MathOp("brackets", lambda n : 1, 0, lambda n : [n], lambda le : PrefixUnaryWithCurvyBrackets("",le[0]), "none")
+parenthesis_op = RandomInverseOperator("brackets", lambda n : 1, 0, lambda n : [n], lambda le : PrefixUnaryWithCurvyBrackets("",le[0]), "none")
 
-#parenthesis_op = MathOp("brackets", lambda n : 1, 0, lambda n : [n], lambda le : PrefixUnaryWithoutCurlyBrackets("",le[0]), True)
+#parenthesis_op = RandomInverseOperator("brackets", lambda n : 1, 0, lambda n : [n], lambda le : PrefixUnaryWithoutCurlyBrackets("",le[0]), True)
 
 
 def is_binary_op(op):

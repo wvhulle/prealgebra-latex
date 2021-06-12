@@ -181,6 +181,10 @@ class Problem:
         heightTree = int(ceil(self.properties.difficulty*log2(self.properties.minutes)))
         numberDigits = int(ceil(log10(self.properties.age+1)*2))
         underlyingOperatorClass = max(allOperatorClasses, key = lambda operatorClass : len(listintersection(operatorClass,problemOperators)))
+        
+        # TODO implement an if branch for when there is an unknown operator and paste together two trees with an unknown on one side
+        # TODO even better would be to start with x . (1)  left and right with an arbitrary integer and then paste together
+        # TODO but then the arithmetic_tree function has to be modified to get a number as argument
         expressiontree = arithmetic_tree(heightTree,numberDigits,list(problemOperators),list(underlyingOperatorClass))
         expression =  r'\(' +  str(render_tree(expressiontree))+r'\)'
         self.expressions = ProblemExpressions(datetime.now(), "", expression, "","")
